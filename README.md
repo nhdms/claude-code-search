@@ -72,7 +72,15 @@ claude-search --embed-model nomic-embed-text --embed-dim 768 embed
 
 ## Live sync
 
-**Recommended — Claude Code Stop hook** (no daemon). Add to `~/.claude/settings.json`:
+**Recommended — Claude Code Stop hook** (no daemon). One command installs it:
+
+```bash
+claude-search hook install            # writes ~/.claude/settings.json
+claude-search hook status             # show what's installed
+claude-search hook uninstall          # remove it
+```
+
+`install` is idempotent, preserves any other hooks/permissions you already have, and pins the absolute path to the current binary so it survives `$PATH` changes. If you'd rather edit by hand:
 
 ```json
 {
@@ -85,7 +93,7 @@ claude-search --embed-model nomic-embed-text --embed-dim 768 embed
 }
 ```
 
-The shipped `scripts/claude-search-hook.sh` wraps this with logging — point the hook at it if you want a paper trail.
+The shipped `scripts/claude-search-hook.sh` wraps the import call with logging — point the hook at it (`--command /path/to/claude-search-hook.sh`) if you want a paper trail.
 
 **Alternative — fsnotify watcher** (sub-second mid-session indexing, but requires a daemon):
 
@@ -103,6 +111,9 @@ claude-search search "<query>" [-n 10] [--project P] [--role R] [--since 7d] [--
 claude-search show <session_id>
 claude-search stats
 claude-search serve [--addr 127.0.0.1:7070]
+claude-search hook install [--command CMD] [--matcher MATCHER]
+claude-search hook uninstall
+claude-search hook status
 ```
 
 Global flags:

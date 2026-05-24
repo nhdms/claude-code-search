@@ -42,6 +42,7 @@ func Execute() error {
 	root.AddCommand(newStatsCmd())
 	root.AddCommand(newEmbedCmd())
 	root.AddCommand(newServeCmd())
+	root.AddCommand(newHookCmd())
 
 	return root.Execute()
 }

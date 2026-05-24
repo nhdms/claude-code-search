@@ -225,17 +225,14 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <p className="text-muted-foreground">
-            <strong className="text-foreground">Recommended:</strong> add a Stop hook to <code>~/.claude/settings.json</code>.
-            No daemon, fires when each Claude Code session pauses, incremental and idempotent.
+            <strong className="text-foreground">Recommended:</strong> install a Stop hook so every Claude Code session is auto-synced when it pauses. No daemon, incremental, idempotent.
           </p>
-          <pre className="bg-secondary/30 border rounded-md p-3 text-xs overflow-x-auto">{`{
-  "hooks": {
-    "Stop": [{
-      "matcher": "",
-      "hooks": [{ "type": "command", "command": "claude-search import" }]
-    }]
-  }
-}`}</pre>
+          <pre className="bg-secondary/30 border rounded-md p-3 text-xs overflow-x-auto">{`claude-search hook install
+claude-search hook status
+claude-search hook uninstall`}</pre>
+          <p className="text-muted-foreground text-xs">
+            Writes <code>~/.claude/settings.json</code> with the absolute path to this binary. Existing hooks &amp; permissions are preserved.
+          </p>
           <p className="text-muted-foreground">
             Or run <code>claude-search watch</code> for sub-second mid-session indexing.
           </p>
