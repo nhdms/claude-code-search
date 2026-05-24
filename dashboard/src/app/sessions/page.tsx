@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResumeActions } from "@/components/resume-button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const PAGE = 30;
 
@@ -134,7 +135,12 @@ export default function SessionsPage() {
                   {listLoading && <TableRow><TableCell className="text-muted-foreground" colSpan={6}>Loading…</TableCell></TableRow>}
                   {(list?.items ?? []).map((s) => (
                     <TableRow key={s.id}>
-                      <TableCell className="whitespace-nowrap text-muted-foreground">{s.started_at?.slice(0, 19).replace("T", " ")}</TableCell>
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                        <Tooltip>
+                          <TooltipTrigger className="cursor-help">{relTime(s.started_at)}</TooltipTrigger>
+                          <TooltipContent>{formatExact(s.started_at)}</TooltipContent>
+                        </Tooltip>
+                      </TableCell>
                       <TableCell className="max-w-[460px]">
                         <div className="flex flex-col gap-0.5 min-w-0">
                           <span className="truncate text-sm">{s.title || <span className="text-muted-foreground italic">(untitled)</span>}</span>
@@ -142,7 +148,16 @@ export default function SessionsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="tabular-nums">{s.messages}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap" title={s.last_synced_at || ""}>{relTime(s.last_synced_at)}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                        {s.last_synced_at ? (
+                          <Tooltip>
+                            <TooltipTrigger className="cursor-help underline decoration-dotted decoration-muted-foreground/30 underline-offset-4">
+                              {relTime(s.last_synced_at)}
+                            </TooltipTrigger>
+                            <TooltipContent>{formatExact(s.last_synced_at)}</TooltipContent>
+                          </Tooltip>
+                        ) : "—"}
+                      </TableCell>
                       <TableCell>
                         <Link className="text-primary hover:underline font-mono text-xs" href={`/sessions/${s.id}`}>{s.id.slice(0, 8)}…</Link>
                       </TableCell>
@@ -214,6 +229,18 @@ export default function SessionsPage() {
       </Tabs>
     </div>
   );
+}
+
+function formatExact(iso?: string) {
+  if (!iso) return "";
+  const normalized = iso.includes("T") ? iso : iso.replace(" ", "T") + "Z";
+  const d = new Date(normalized);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString(undefined, {
+    year: "numeric", month: "short", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    timeZoneName: "short",
+  });
 }
 
 function relTime(iso?: string) {
