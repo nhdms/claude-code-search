@@ -25,6 +25,7 @@ export type SessionRow = {
   ended_at: string;
   title?: string;
   messages: number;
+  last_synced_at?: string;
 };
 
 export type SessionList = { total: number; items: SessionRow[]; limit: number; offset: number };

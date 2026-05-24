@@ -125,12 +125,13 @@ export default function SessionsPage() {
                     <TableHead>Started</TableHead>
                     <TableHead>Title / Project</TableHead>
                     <TableHead>Messages</TableHead>
+                    <TableHead>Synced</TableHead>
                     <TableHead>Session</TableHead>
                     <TableHead className="text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {listLoading && <TableRow><TableCell className="text-muted-foreground" colSpan={5}>Loading…</TableCell></TableRow>}
+                  {listLoading && <TableRow><TableCell className="text-muted-foreground" colSpan={6}>Loading…</TableCell></TableRow>}
                   {(list?.items ?? []).map((s) => (
                     <TableRow key={s.id}>
                       <TableCell className="whitespace-nowrap text-muted-foreground">{s.started_at?.slice(0, 19).replace("T", " ")}</TableCell>
@@ -141,6 +142,7 @@ export default function SessionsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="tabular-nums">{s.messages}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap" title={s.last_synced_at || ""}>{relTime(s.last_synced_at)}</TableCell>
                       <TableCell>
                         <Link className="text-primary hover:underline font-mono text-xs" href={`/sessions/${s.id}`}>{s.id.slice(0, 8)}…</Link>
                       </TableCell>
@@ -212,6 +214,20 @@ export default function SessionsPage() {
       </Tabs>
     </div>
   );
+}
+
+function relTime(iso?: string) {
+  if (!iso) return "—";
+  // SQLite stores datetime('now') as "YYYY-MM-DD HH:MM:SS" without a TZ; treat as UTC.
+  const normalized = iso.includes("T") ? iso : iso.replace(" ", "T") + "Z";
+  const t = new Date(normalized).getTime();
+  if (Number.isNaN(t)) return "—";
+  const sec = Math.max(0, Math.floor((Date.now() - t) / 1000));
+  if (sec < 60) return `${sec}s ago`;
+  if (sec < 3600) return `${Math.floor(sec / 60)}m ago`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)}h ago`;
+  if (sec < 86400 * 30) return `${Math.floor(sec / 86400)}d ago`;
+  return new Date(normalized).toISOString().slice(0, 10);
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
