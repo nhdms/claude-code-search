@@ -123,7 +123,7 @@ export default function SessionsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Started</TableHead>
-                    <TableHead>Project</TableHead>
+                    <TableHead>Title / Project</TableHead>
                     <TableHead>Messages</TableHead>
                     <TableHead>Session</TableHead>
                     <TableHead className="text-right pr-4">Actions</TableHead>
@@ -134,7 +134,12 @@ export default function SessionsPage() {
                   {(list?.items ?? []).map((s) => (
                     <TableRow key={s.id}>
                       <TableCell className="whitespace-nowrap text-muted-foreground">{s.started_at?.slice(0, 19).replace("T", " ")}</TableCell>
-                      <TableCell className="truncate max-w-[420px]">{s.project || s.cwd || "—"}</TableCell>
+                      <TableCell className="max-w-[460px]">
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                          <span className="truncate text-sm">{s.title || <span className="text-muted-foreground italic">(untitled)</span>}</span>
+                          <span className="truncate text-xs text-muted-foreground font-mono">{s.project || s.cwd || "—"}</span>
+                        </div>
+                      </TableCell>
                       <TableCell className="tabular-nums">{s.messages}</TableCell>
                       <TableCell>
                         <Link className="text-primary hover:underline font-mono text-xs" href={`/sessions/${s.id}`}>{s.id.slice(0, 8)}…</Link>

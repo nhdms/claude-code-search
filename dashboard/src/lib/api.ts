@@ -23,6 +23,7 @@ export type SessionRow = {
   cwd: string;
   started_at: string;
   ended_at: string;
+  title?: string;
   messages: number;
 };
 

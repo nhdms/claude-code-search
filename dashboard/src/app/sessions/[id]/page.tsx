@@ -20,10 +20,11 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     <div className="space-y-4">
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-4">
-          <div className="space-y-1">
+          <div className="space-y-1 min-w-0">
             <div className="text-xs uppercase text-muted-foreground tracking-wider">Session</div>
-            <div className="font-mono text-sm break-all">{session.id}</div>
-            <div className="text-sm">{session.project || session.cwd}</div>
+            {session.title && <div className="text-base font-medium leading-tight">{session.title}</div>}
+            <div className="font-mono text-xs break-all text-muted-foreground">{session.id}</div>
+            <div className="text-sm font-mono">{session.project || session.cwd}</div>
             <div className="text-muted-foreground text-xs">
               {session.started_at?.slice(0, 19).replace("T", " ")} → {session.ended_at?.slice(0, 19).replace("T", " ")}
             </div>

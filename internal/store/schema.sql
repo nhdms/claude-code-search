@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS sessions (
   cwd TEXT,
   started_at TEXT,
   ended_at TEXT,
-  message_count INTEGER DEFAULT 0
+  message_count INTEGER DEFAULT 0,
+  title TEXT
 );
 
 CREATE TABLE IF NOT EXISTS messages (

@@ -19,6 +19,7 @@ type RawLine struct {
 	GitBranch   string          `json:"gitBranch"`
 	IsSidechain bool            `json:"isSidechain"`
 	Message     json.RawMessage `json:"message"`
+	AITitle     string          `json:"aiTitle"`
 }
 
 type Message struct {
@@ -48,6 +49,7 @@ type Event struct {
 	ToolInput  string
 	ToolOutput string
 	Kind       string
+	Title      string
 }
 
 func ParseFile(path string, offset int64, emit func(ev Event, newOffset int64) error) (int64, error) {
@@ -92,6 +94,14 @@ func ParseFile(path string, offset int64, emit func(ev Event, newOffset int64) e
 }
 
 func extractEvents(raw RawLine) []Event {
+	if raw.Type == "ai-title" && raw.AITitle != "" {
+		return []Event{{
+			SessionID: raw.SessionID,
+			Timestamp: raw.Timestamp,
+			Kind:      "ai-title",
+			Title:     raw.AITitle,
+		}}
+	}
 	if raw.Type != "user" && raw.Type != "assistant" {
 		return nil
 	}

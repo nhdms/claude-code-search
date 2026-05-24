@@ -32,17 +32,32 @@ func NewWriter(db *store.DB, projectPath string, mode ToolMode) *Writer {
 }
 
 func (w *Writer) EnsureSession(tx *sql.Tx, sessionID, cwd, ts string) error {
+	// project_path tracks the actual working directory (cwd) from the
+	// transcript. The Claude projects/ directory name is ambiguous when paths
+	// contain dashes (vibe/kanban vs vibe-kanban), so cwd from the event is
+	// the only trustworthy source. If we have no cwd on THIS event (e.g.
+	// ai-title), pass empty so the ON CONFLICT branch keeps the existing
+	// stored value rather than clobbering it with a decoded guess.
+	projectPath := cwd
 	_, err := tx.Exec(`INSERT INTO sessions(id, project_path, cwd, started_at, ended_at, message_count)
 		VALUES(?,?,?,?,?,0)
 		ON CONFLICT(id) DO UPDATE SET
 		  ended_at=excluded.ended_at,
-		  cwd=COALESCE(sessions.cwd, excluded.cwd),
-		  project_path=COALESCE(sessions.project_path, excluded.project_path)`,
-		sessionID, w.ProjectPath, cwd, ts, ts)
+		  cwd=COALESCE(NULLIF(excluded.cwd,''), sessions.cwd),
+		  project_path=COALESCE(NULLIF(excluded.project_path,''), sessions.project_path)`,
+		sessionID, projectPath, cwd, ts, ts)
 	return err
 }
 
 func (w *Writer) WriteEvent(tx *sql.Tx, ev transcript.Event) error {
+	if ev.Kind == "ai-title" {
+		// Update session title; create row if missing.
+		if err := w.EnsureSession(tx, ev.SessionID, ev.CWD, ev.Timestamp); err != nil {
+			return err
+		}
+		_, err := tx.Exec(`UPDATE sessions SET title = ? WHERE id = ?`, ev.Title, ev.SessionID)
+		return err
+	}
 	if err := w.EnsureSession(tx, ev.SessionID, ev.CWD, ev.Timestamp); err != nil {
 		return err
 	}

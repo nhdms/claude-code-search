@@ -292,7 +292,7 @@ func (s *Server) listSessions(w http.ResponseWriter, r *http.Request) {
 	var total int
 	s.DB.QueryRow(countSQL, args...).Scan(&total)
 
-	sql := `SELECT s.id, s.project_path, s.cwd, s.started_at, s.ended_at,
+	sql := `SELECT s.id, s.project_path, s.cwd, s.started_at, s.ended_at, COALESCE(s.title,''),
 		(SELECT COUNT(*) FROM messages m WHERE m.session_id = s.id) AS msg_count
 		FROM sessions s` + where + ` ORDER BY s.started_at DESC LIMIT ? OFFSET ?`
 	args = append(args, limit, offset)
@@ -308,13 +308,14 @@ func (s *Server) listSessions(w http.ResponseWriter, r *http.Request) {
 		CWD       string `json:"cwd"`
 		StartedAt string `json:"started_at"`
 		EndedAt   string `json:"ended_at"`
+		Title     string `json:"title"`
 		Messages  int    `json:"messages"`
 	}
 	out := []sess{}
 	for rows.Next() {
 		var x sess
 		var proj, cwd, ended *string
-		rows.Scan(&x.ID, &proj, &cwd, &x.StartedAt, &ended, &x.Messages)
+		rows.Scan(&x.ID, &proj, &cwd, &x.StartedAt, &ended, &x.Title, &x.Messages)
 		if proj != nil {
 			x.Project = *proj
 		}
@@ -341,10 +342,11 @@ func (s *Server) sessionDetail(w http.ResponseWriter, r *http.Request) {
 		CWD       string `json:"cwd"`
 		StartedAt string `json:"started_at"`
 		EndedAt   string `json:"ended_at"`
+		Title     string `json:"title"`
 	}
 	var proj, cwd, ended *string
-	err := s.DB.QueryRow(`SELECT id, project_path, cwd, started_at, ended_at FROM sessions WHERE id=?`, id).
-		Scan(&sess.ID, &proj, &cwd, &sess.StartedAt, &ended)
+	err := s.DB.QueryRow(`SELECT id, project_path, cwd, started_at, ended_at, COALESCE(title,'') FROM sessions WHERE id=?`, id).
+		Scan(&sess.ID, &proj, &cwd, &sess.StartedAt, &ended, &sess.Title)
 	if err != nil {
 		writeErr(w, 404, err)
 		return
