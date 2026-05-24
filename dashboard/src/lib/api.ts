@@ -79,5 +79,7 @@ export type Job = {
 
 export function resumeCommand(session: { id: string; cwd?: string; project?: string }) {
   const dir = session.cwd || session.project || "~";
-  return `cd "${dir}" && claude --resume ${session.id}`;
+  // Match the server's shell-quoting (single quotes, escape internal ').
+  const quoted = `'${dir.replace(/'/g, `'\\''`)}'`;
+  return `cd ${quoted} && claude --resume ${session.id}`;
 }

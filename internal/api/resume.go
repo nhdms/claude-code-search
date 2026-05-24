@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -78,11 +80,14 @@ tell application "Terminal" to do script %q`, cmd)
 end tell`, cmd)
 		return "iTerm", exec.Command("osascript", "-e", script).Run()
 	case "gnome-terminal":
-		return "gnome-terminal", exec.Command("gnome-terminal", "--", "bash", "-lc", cmd+"; exec bash").Start()
+		sh := userShell()
+		return "gnome-terminal", exec.Command("gnome-terminal", "--", sh, "-lc", cmd+"; exec "+sh).Start()
 	case "konsole":
-		return "konsole", exec.Command("konsole", "-e", "bash", "-lc", cmd+"; exec bash").Start()
+		sh := userShell()
+		return "konsole", exec.Command("konsole", "-e", sh, "-lc", cmd+"; exec "+sh).Start()
 	case "xterm":
-		return "xterm", exec.Command("xterm", "-e", "bash", "-lc", cmd+"; exec bash").Start()
+		sh := userShell()
+		return "xterm", exec.Command("xterm", "-e", sh, "-lc", cmd+"; exec "+sh).Start()
 	}
 	return "", fmt.Errorf("unknown terminal: %s", name)
 }
@@ -98,4 +103,18 @@ func hasApp(name string) bool {
 // shellQuote single-quote-quotes s for shell, escaping internal single quotes.
 func shellQuote(s string) string {
 	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
+}
+
+// userShell returns the user's default login shell from $SHELL, falling back
+// to /bin/bash. Always returns an absolute path so it works under -e/--.
+func userShell() string {
+	if s := os.Getenv("SHELL"); s != "" {
+		return s
+	}
+	for _, p := range []string{"/bin/zsh", "/bin/bash", "/bin/sh"} {
+		if _, err := os.Stat(p); err == nil {
+			return p
+		}
+	}
+	return filepath.Join("/bin", "bash")
 }

@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
-import { Terminal, Loader2 } from "lucide-react";
+import { Terminal, Loader2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { resumeCommand } from "@/lib/api";
+
+type Sess = { id: string; cwd?: string; project?: string };
 
 export function ResumeButton({
   session,
@@ -11,7 +13,7 @@ export function ResumeButton({
   size = "sm",
   label = "Resume",
 }: {
-  session: { id: string; cwd?: string; project?: string };
+  session: Sess;
   variant?: "outline" | "ghost" | "secondary";
   size?: "sm" | "default" | "icon";
   label?: string;
@@ -55,5 +57,33 @@ export function ResumeButton({
       {busy ? <Loader2 className="animate-spin" /> : <Terminal />}
       {size !== "icon" && <span>{busy ? "Opening…" : label}</span>}
     </Button>
+  );
+}
+
+export function CopyResumeButton({ session }: { session: Sess }) {
+  async function copy(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    const cmd = resumeCommand(session);
+    try {
+      await navigator.clipboard.writeText(cmd);
+      toast.success("Copied resume command", { description: cmd, duration: 3500 });
+    } catch {
+      toast.error("Copy failed");
+    }
+  }
+  return (
+    <Button variant="ghost" size="icon" onClick={copy} title="Copy resume command">
+      <Copy />
+    </Button>
+  );
+}
+
+export function ResumeActions({ session }: { session: Sess }) {
+  return (
+    <div className="flex items-center gap-1 justify-end">
+      <ResumeButton session={session} />
+      <CopyResumeButton session={session} />
+    </div>
   );
 }

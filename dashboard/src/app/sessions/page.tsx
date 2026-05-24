@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ResumeButton } from "@/components/resume-button";
+import { ResumeActions } from "@/components/resume-button";
 
 const PAGE = 30;
 
@@ -126,7 +126,7 @@ export default function SessionsPage() {
                     <TableHead>Project</TableHead>
                     <TableHead>Messages</TableHead>
                     <TableHead>Session</TableHead>
-                    <TableHead className="text-right pr-4">Resume</TableHead>
+                    <TableHead className="text-right pr-4">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -140,7 +140,7 @@ export default function SessionsPage() {
                         <Link className="text-primary hover:underline font-mono text-xs" href={`/sessions/${s.id}`}>{s.id.slice(0, 8)}…</Link>
                       </TableCell>
                       <TableCell className="text-right pr-4">
-                        <ResumeButton session={s} size="sm" />
+                        <ResumeActions session={s} />
                       </TableCell>
                     </TableRow>
                   ))}

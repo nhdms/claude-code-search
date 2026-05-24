@@ -5,7 +5,7 @@ import { use } from "react";
 import fetcher, { SessionDetail } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ResumeButton } from "@/components/resume-button";
+import { ResumeButton, CopyResumeButton } from "@/components/resume-button";
 import { ReindexButton } from "@/components/reindex-button";
 import { Markdown } from "@/components/markdown";
 
@@ -30,6 +30,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
           </div>
           <div className="flex gap-2">
             <ResumeButton session={session} />
+            <CopyResumeButton session={session} />
             <ReindexButton sessionId={session.id} onDone={() => mutate()} />
           </div>
         </CardHeader>
