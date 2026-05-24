@@ -11,6 +11,31 @@ Everything runs locally. Single SQLite file. OpenAI for best-quality embeddings,
 - **Search**: BM25 (FTS5) + cosine KNN (vec0) → Reciprocal Rank Fusion (k=60)
 - **Dashboard**: Next.js 15 (App Router) · shadcn/ui · Tailwind v4 · recharts · SWR · sonner
 
+## Install
+
+**Prebuilt binary** (macOS arm64/amd64, Linux amd64/arm64):
+
+```bash
+# Pick the asset for your platform from the latest release:
+#   https://github.com/nhdms/claude-code-search/releases/latest
+curl -L -o claude-search.tar.gz https://github.com/nhdms/claude-code-search/releases/latest/download/claude-search_${TAG}_darwin-arm64.tar.gz
+tar -xzf claude-search.tar.gz
+install claude-search ~/.local/bin/
+```
+
+Each asset ships with a `.sha256` checksum next to it.
+
+**From source** — see Quick start.
+
+To cut a release, push a tag and GitHub Actions handles the rest:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The workflow builds CGO binaries on native macOS and Linux runners (no cross-compile headaches with sqlite-vec), packages them as `tar.gz` with SHA-256 sums, and attaches everything to the GitHub release.
+
 ## Quick start
 
 ```bash
