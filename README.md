@@ -13,7 +13,7 @@ Everything runs locally. Single SQLite file. OpenAI for best-quality embeddings,
 
 ## Install
 
-**Prebuilt binary** (macOS arm64/amd64, Linux amd64/arm64):
+**Prebuilt binary** (macOS arm64, Linux amd64/arm64):
 
 ```bash
 # Pick the asset for your platform from the latest release:
