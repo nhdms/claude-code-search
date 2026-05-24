@@ -1,5 +1,6 @@
 "use client";
-import { Copy, Terminal } from "lucide-react";
+import { useState } from "react";
+import { Terminal, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { resumeCommand } from "@/lib/api";
@@ -15,20 +16,44 @@ export function ResumeButton({
   size?: "sm" | "default" | "icon";
   label?: string;
 }) {
-  const cmd = resumeCommand(session);
-  const copy = async (e: React.MouseEvent) => {
+  const [busy, setBusy] = useState(false);
+
+  async function run(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+    setBusy(true);
     try {
-      await navigator.clipboard.writeText(cmd);
-      toast.success("Copied resume command", { description: cmd, duration: 3500 });
-    } catch {
-      toast.error("Copy failed");
+      const r = await fetch("/api/resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: session.id,
+          cwd: session.cwd ?? "",
+          project: session.project ?? "",
+        }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error || `HTTP ${r.status}`);
+      const j = await r.json();
+      toast.success(`Opened in ${j.terminal}`, { description: j.command, duration: 4000 });
+    } catch (err) {
+      try {
+        await navigator.clipboard.writeText(resumeCommand(session));
+        toast.message("Couldn't open terminal — copied to clipboard", {
+          description: String(err),
+          duration: 5000,
+        });
+      } catch {
+        toast.error("Open failed", { description: String(err) });
+      }
+    } finally {
+      setBusy(false);
     }
-  };
+  }
+
   return (
-    <Button variant={variant} size={size} onClick={copy} title={cmd}>
-      {size === "icon" ? <Copy /> : <><Terminal /> {label}</>}
+    <Button variant={variant} size={size} onClick={run} disabled={busy} title={`Resume session ${session.id}`}>
+      {busy ? <Loader2 className="animate-spin" /> : <Terminal />}
+      {size !== "icon" && <span>{busy ? "Opening…" : label}</span>}
     </Button>
   );
 }
