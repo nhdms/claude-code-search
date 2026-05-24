@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ResumeButton } from "@/components/resume-button";
 import { ReindexButton } from "@/components/reindex-button";
+import { Markdown } from "@/components/markdown";
 
 export default function SessionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -48,7 +49,9 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
                 </div>
                 <span className="tabular-nums">{m.ts}</span>
               </div>
-              {m.text && <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed">{m.text}</pre>}
+              {m.text && (m.role === "assistant" || m.kind === "text"
+                ? <Markdown>{m.text}</Markdown>
+                : <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed">{m.text}</pre>)}
               {m.kind === "tool_use" && m.tool_input && (
                 <details className="mt-2">
                   <summary className="text-xs text-muted-foreground cursor-pointer">tool input</summary>
