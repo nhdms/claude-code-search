@@ -75,12 +75,14 @@ claude-search --embed-model nomic-embed-text --embed-dim 768 embed
 **Recommended — Claude Code Stop hook** (no daemon). One command installs it:
 
 ```bash
-claude-search hook install            # writes ~/.claude/settings.json
-claude-search hook status             # show what's installed
-claude-search hook uninstall          # remove it
+claude-search hook install                              # → "<bin> import --embed"
+claude-search hook install --hook-base-url http://localhost:11434/v1    # local model
+claude-search hook install --no-embed                   # FTS-only sync
+claude-search hook status
+claude-search hook uninstall
 ```
 
-`install` is idempotent, preserves any other hooks/permissions you already have, and pins the absolute path to the current binary so it survives `$PATH` changes. If you'd rather edit by hand:
+`install` is idempotent, preserves any other hooks/permissions you already have, and pins the absolute path to the current binary so it survives `$PATH` changes. The default installs `import --embed`, so every new conversation is auto-vectorized — make sure `OPENAI_API_KEY` is exported in your shell rc (or use `--hook-base-url` for a local embedder). If you'd rather edit by hand:
 
 ```json
 {
@@ -122,6 +124,7 @@ Global flags:
 - `--projects-dir PATH` (default `~/.claude/projects`)
 - `--embed-model NAME` (default `text-embedding-3-small`)
 - `--embed-dim N`
+- `--base-url URL` (or `CLAUDE_SEARCH_BASE_URL` env) — OpenAI-compatible endpoint for local models
 
 ## HTTP API
 

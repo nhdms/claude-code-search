@@ -17,6 +17,7 @@ var (
 	flagProjectsDir string
 	flagEmbedModel  string
 	flagEmbedDim    int
+	flagBaseURL     string
 )
 
 func Execute() error {
@@ -34,6 +35,7 @@ func Execute() error {
 	root.PersistentFlags().StringVar(&flagProjectsDir, "projects-dir", defaultProjects, "Claude projects dir")
 	root.PersistentFlags().StringVar(&flagEmbedModel, "embed-model", DefaultEmbedModel, "OpenAI embedding model")
 	root.PersistentFlags().IntVar(&flagEmbedDim, "embed-dim", DefaultEmbedDim, "Embedding dimension")
+	root.PersistentFlags().StringVar(&flagBaseURL, "base-url", os.Getenv("CLAUDE_SEARCH_BASE_URL"), "OpenAI-compatible base URL (e.g. http://localhost:11434/v1)")
 
 	root.AddCommand(newImportCmd())
 	root.AddCommand(newWatchCmd())

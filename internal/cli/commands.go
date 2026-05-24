@@ -103,14 +103,21 @@ func newEmbedCmd() *cobra.Command {
 
 func runEmbed(ctx context.Context, db *store.DB) error {
 	key := os.Getenv("OPENAI_API_KEY")
-	if key == "" {
+	if key == "" && flagBaseURL == "" {
 		pending, _ := ingest.PendingChunks(db)
-		fmt.Printf("OPENAI_API_KEY not set; skipping embedding (%d pending)\n", pending)
+		fmt.Printf("Neither OPENAI_API_KEY nor --base-url set; skipping embedding (%d pending)\n", pending)
 		return nil
 	}
-	emb := ingest.NewEmbedder(key, flagEmbedModel, flagEmbedDim)
+	if key == "" {
+		key = "local"
+	}
+	emb := ingest.NewEmbedderWithBase(key, flagEmbedModel, flagEmbedDim, flagBaseURL)
 	pending, _ := ingest.PendingChunks(db)
-	fmt.Printf("Embedding %d chunks with %s...\n", pending, flagEmbedModel)
+	target := flagEmbedModel
+	if flagBaseURL != "" {
+		target += " @ " + flagBaseURL
+	}
+	fmt.Printf("Embedding %d chunks with %s...\n", pending, target)
 	start := time.Now()
 	n, err := ingest.EmbedPending(ctx, db, emb, 0)
 	if err != nil {
@@ -189,8 +196,12 @@ func newWatchCmd() *cobra.Command {
 					if stats.NewMessages > 0 || stats.NewChunks > 0 {
 						fmt.Printf("synced: +%d messages, +%d chunks\n", stats.NewMessages, stats.NewChunks)
 						if embedOnTick {
-							if key := os.Getenv("OPENAI_API_KEY"); key != "" {
-								emb := ingest.NewEmbedder(key, flagEmbedModel, flagEmbedDim)
+							key := os.Getenv("OPENAI_API_KEY")
+							if key != "" || flagBaseURL != "" {
+								if key == "" {
+									key = "local"
+								}
+								emb := ingest.NewEmbedderWithBase(key, flagEmbedModel, flagEmbedDim, flagBaseURL)
 								n, err := ingest.EmbedPending(ctx, db, emb, 0)
 								if err != nil {
 									fmt.Fprintln(os.Stderr, "embed:", err)
@@ -241,11 +252,15 @@ func newSearchCmd() *cobra.Command {
 				opts.Since = t
 			}
 			if !noVector {
-				if key := os.Getenv("OPENAI_API_KEY"); key != "" {
-					opts.Embedder = ingest.NewEmbedder(key, flagEmbedModel, flagEmbedDim)
+				key := os.Getenv("OPENAI_API_KEY")
+				if key != "" || flagBaseURL != "" {
+					if key == "" {
+						key = "local"
+					}
+					opts.Embedder = ingest.NewEmbedderWithBase(key, flagEmbedModel, flagEmbedDim, flagBaseURL)
 					opts.UseVector = true
 				} else {
-					fmt.Fprintln(os.Stderr, "note: OPENAI_API_KEY not set; FTS-only search")
+					fmt.Fprintln(os.Stderr, "note: no OPENAI_API_KEY or --base-url; FTS-only search")
 				}
 			}
 

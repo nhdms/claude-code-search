@@ -20,16 +20,21 @@ func newHookCmd() *cobra.Command {
 	return cmd
 }
 
-func defaultHookCommand() (string, error) {
+func defaultHookCommand(embed bool, baseURL string) (string, error) {
 	exe, err := os.Executable()
 	if err != nil || exe == "" {
-		return "claude-search import", nil
+		exe = "claude-search"
+	} else if r, err2 := filepath.EvalSymlinks(exe); err2 == nil {
+		exe = r
 	}
-	resolved, err := filepath.EvalSymlinks(exe)
-	if err != nil {
-		resolved = exe
+	cmd := exe + " import"
+	if embed {
+		cmd += " --embed"
 	}
-	return resolved + " import", nil
+	if baseURL != "" {
+		cmd += " --base-url " + baseURL
+	}
+	return cmd, nil
 }
 
 func settingsPath() string {
@@ -40,12 +45,17 @@ func settingsPath() string {
 func newHookInstallCmd() *cobra.Command {
 	var cmdLine string
 	var matcher string
+	var noEmbed bool
+	var baseURL string
 	cmd := &cobra.Command{
 		Use:   "install",
-		Short: "Add a Stop hook to ~/.claude/settings.json",
+		Short: "Add a Stop hook to ~/.claude/settings.json (default: import --embed)",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmdLine == "" {
-				def, err := defaultHookCommand()
+				if baseURL == "" {
+					baseURL = flagBaseURL
+				}
+				def, err := defaultHookCommand(!noEmbed, baseURL)
 				if err != nil {
 					return err
 				}
@@ -68,8 +78,10 @@ func newHookInstallCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&cmdLine, "command", "", "Command to run (default: <abs path to claude-search> import)")
+	cmd.Flags().StringVar(&cmdLine, "command", "", "Override command (default: <abs path> import --embed [--base-url URL])")
 	cmd.Flags().StringVar(&matcher, "matcher", "", "Hook matcher (empty = always)")
+	cmd.Flags().BoolVar(&noEmbed, "no-embed", false, "Only ingest, do not call OpenAI/embedder")
+	cmd.Flags().StringVar(&baseURL, "hook-base-url", "", "Pin a base URL into the hook command (overrides --base-url)")
 	return cmd
 }
 
