@@ -14,7 +14,12 @@ Everything runs locally. Single SQLite file. OpenAI for best-quality embeddings,
 ## Quick start
 
 ```bash
-# 1) Build the binary
+# One-shot: build everything and run API + watcher + dashboard.
+make up                                 # Ctrl-C to stop
+make up-detach                          # run as daemons; logs in ~/.local/share/claude-search/
+make stop                               # stop the daemons
+
+# … or build the pieces yourself.
 make build                              # → ./bin/claude-search
 make install                            # → ~/.local/bin/claude-search (optional)
 

@@ -1,7 +1,7 @@
 BIN := bin/claude-search
 TAGS := sqlite_fts5
 
-.PHONY: build install test clean
+.PHONY: build install test clean up start stop
 
 build:
 	CGO_ENABLED=1 go build -tags "$(TAGS)" -o $(BIN) ./cmd/claude-search
@@ -14,3 +14,14 @@ test:
 
 clean:
 	rm -f $(BIN)
+
+# One-shot launcher (foreground; Ctrl-C cleans up)
+up start:
+	./scripts/up.sh
+
+# Detached daemons
+up-detach:
+	./scripts/up.sh --detach
+
+stop:
+	./scripts/up.sh --stop

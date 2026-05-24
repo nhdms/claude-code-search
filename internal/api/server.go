@@ -295,7 +295,7 @@ func (s *Server) listSessions(w http.ResponseWriter, r *http.Request) {
 	sql := `SELECT s.id, s.project_path, s.cwd, s.started_at, s.ended_at, COALESCE(s.title,''),
 		(SELECT COUNT(*) FROM messages m WHERE m.session_id = s.id) AS msg_count,
 		COALESCE((SELECT MAX(last_synced_at) FROM sync_state ss WHERE ss.file_path LIKE '%' || s.id || '%'), '') AS last_synced
-		FROM sessions s` + where + ` ORDER BY s.started_at DESC LIMIT ? OFFSET ?`
+		FROM sessions s` + where + ` ORDER BY COALESCE(last_synced, s.started_at) DESC, s.started_at DESC LIMIT ? OFFSET ?`
 	args = append(args, limit, offset)
 	rows, err := s.DB.Query(sql, args...)
 	if err != nil {
